@@ -10,6 +10,7 @@ module Flatter
     autoload :Traits
     autoload :AttributeMethods
     autoload :Persistence
+    autoload :ModelName
 
     include Options
     include Target
@@ -19,6 +20,7 @@ module Flatter
     include AttributeMethods
     include ActiveModel::Validations
     include Persistence
+    prepend ModelName
 
     def self.inherited(subclass)
       subclass.mappings  = mappings.dup

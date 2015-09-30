@@ -3,6 +3,7 @@ module Flatter
     prepend Flatter::Mapper::Target::FactoryMethods
     prepend Flatter::Mapper::Mounting::FactoryMethods
     prepend Flatter::Mapper::Traits::FactoryMethods
+    prepend Flatter::Mapper::Options::FactoryMethods
 
     attr_reader :name, :options
 
@@ -19,13 +20,16 @@ module Flatter
     end
 
     def create(mapper)
-      mapper_class.new(fetch_target_from(mapper)).tap do |mounting|
-        mounting.name = name.to_s
-      end
+      mapper_class.new(fetch_target_from(mapper))
     end
 
     def fetch_target_from(mapper)
-      mapper.target.public_send(name)
+      default_target_from(mapper)
     end
+
+    def default_target_from(mapper)
+      mapper.target.public_send(name) if mapper.target.respond_to?(name)
+    end
+    private :default_target_from
   end
 end

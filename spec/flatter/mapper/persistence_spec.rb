@@ -163,8 +163,14 @@ module Flatter
 
       specify 'callbacks execution order' do
         expect(PersistenceSpec.execution).to eq %w(
-          D.before_validate
-          D.after_validate
+          trait_a.before_validate
+          A.before_validate
+          A.after_validate
+          trait_a.after_validate
+          trait_c.before_validate
+          C.before_validate
+          C.after_validate
+          trait_c.after_validate
           trait_b1.before_validate
           trait_b2.before_validate
           B(e).before_validate
@@ -173,14 +179,8 @@ module Flatter
           B(e).after_validate
           trait_b2.after_validate
           trait_b1.after_validate
-          trait_c.before_validate
-          C.before_validate
-          C.after_validate
-          trait_c.after_validate
-          trait_a.before_validate
-          A.before_validate
-          A.after_validate
-          trait_a.after_validate
+          D.before_validate
+          D.after_validate
         )
       end
     end
@@ -199,9 +199,16 @@ module Flatter
         mapper.save
 
         expect(PersistenceSpec.execution).to eq %w(
-          D.before_save
-          D.save
-          D.after_save
+          trait_a.before_save
+          A.before_save
+          A.save
+          A.after_save
+          trait_a.after_save
+          trait_c.before_save
+          C.before_save
+          C.save
+          C.after_save
+          trait_c.after_save
           trait_b1.before_save
           trait_b2.before_save
           B(e).before_save
@@ -211,16 +218,9 @@ module Flatter
           B(e).after_save
           trait_b2.after_save
           trait_b1.after_save
-          trait_c.before_save
-          C.before_save
-          C.save
-          C.after_save
-          trait_c.after_save
-          trait_a.before_save
-          A.before_save
-          A.save
-          A.after_save
-          trait_a.after_save
+          D.before_save
+          D.save
+          D.after_save
         )
       end
     end

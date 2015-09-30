@@ -14,8 +14,7 @@ module Flatter
     end
 
     def valid?(*)
-      root_mountings.reverse.each(&:run_validations!)
-      run_validations!
+      mappers_chain(:validate).each(&:run_validations!)
       consolidate_errors!
       errors.empty?
     end
@@ -26,13 +25,18 @@ module Flatter
     end
 
     def save
-      results = root_mountings.reverse.map(&:run_save!)
-      run_save! && results.all?
+      results = mappers_chain(:save).map(&:run_save!)
+      results.all?
     end
 
     def run_save!
       with_callbacks(:save){ save_target }
     end
+
+    def mappers_chain(context)
+      root_mountings.dup.unshift(self)
+    end
+    private :mappers_chain
 
     def save_target
       target.respond_to?(:save) ? target.save : true

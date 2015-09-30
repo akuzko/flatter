@@ -9,11 +9,14 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Artem Kuzko"]
   spec.email         = ["a.kuzko@gmail.com"]
 
-  spec.summary       = %q{Deep object graph to a plain flat properties mapper.}
-  spec.description   = %q{This library allows to map accessors and properties of deeply
-    nested model graph to a plain mapper object with flexible behavior.}
+  spec.summary       = %q{Maps a deeply nested model graph to a single object with a flat set of attributes.}
+  spec.description   = %q{Flatter transforms a deeply nested graph of ActiveModel-like objects
+    to a single mapper object that handles all the nested attributes and has a very flexible behavior
+    for handling validation, saving routines with a DRY approach.}
   spec.homepage      = "https://github.com/akuzko/flatter"
   spec.license       = "MIT"
+
+  spec.required_ruby_version = '>= 2.0.0'
 
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
   spec.bindir        = "bin"
@@ -21,7 +24,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "activesupport", ">= 3.2"
-  spec.add_dependency "activemodel"
+  spec.add_dependency "activemodel", ">= 3.0"
 
   spec.add_development_dependency "bundler", "~> 1.10"
   spec.add_development_dependency "rake", "~> 10.0"

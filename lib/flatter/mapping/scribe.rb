@@ -12,7 +12,7 @@ module Flatter
 
         case reader
         when Proc, String, Symbol
-          args = [super].tap{ |a| a << name if arity_of(reader) == 2 }
+          args = Array((name if arity_of(reader) == 1))
           exec_or_send(reader, args)
         when false then nil
         else reader
@@ -26,7 +26,7 @@ module Flatter
         when Proc, String, Symbol
           args = [value].tap{ |a| a << name if arity_of(writer) == 2 }
           exec_or_send(writer, args)
-        when false          then nil
+        when false then nil
         else fail BadWriterError, "cannot use #{writer} for assigning values"
         end
       end

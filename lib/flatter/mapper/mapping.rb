@@ -57,6 +57,10 @@ module Flatter
       @_mapping_names ||= mappings.keys
     end
 
+    def writable_mapping_names
+      mappings.select{ |_, v| !v.writer? || v.writer != false }.keys
+    end
+
     def [](name)
       mappings[name.to_s].try(:read)
     end

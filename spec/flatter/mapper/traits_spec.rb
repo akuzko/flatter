@@ -69,7 +69,11 @@ module Flatter
       expect(mapper.read).to eq({a1: 'a1', a2: 'a2', b1: 'b1', b2: 'b2', b3: 'b3'}.stringify_keys)
     end
 
-    it 'writin information mounted via traits' do
+    specify 'mountings with traits' do
+      expect(mapper.mountings.keys).to eq %w(trait_a1_trait b b_extension_trait trait_b_trait)
+    end
+
+    it 'writing information mounted via traits' do
       mapper.write(a1: 'a12', a2: 'a22', a3: 'a32', b1: 'b12', b2: 'b22', b3: 'b32')
       expect(model.a1).to eq 'a12'
       expect(model.a2).to eq 'a22'
@@ -90,6 +94,29 @@ module Flatter
 
       specify{ expect(mapper.mountings['trait_a3_trait'].method_a1).to eq 'a1' }
       specify{ expect(mapper.mountings['trait_a3_trait'].method_a3).to eq 'a3' }
+    end
+
+    describe '#set_target' do
+      let(:other_model) { TraitsSpec::A.new }
+      let(:mapper)      { TraitsSpec::MapperA.new(model, :trait_a2, :trait_a3) }
+
+      after do
+        expect(mapper.target).to be other_model
+        expect(mapper.mounting(:trait_a2_trait).target).to be other_model
+        expect(mapper.mounting(:trait_a3_trait).target).to be other_model
+      end
+
+      context 'when called by the root mapper' do
+        it 'propagates target change to traits' do
+          mapper.set_target(other_model)
+        end
+      end
+
+      context 'when called by the trait mapper' do
+        it 'propagates target change to root and other traits' do
+          mapper.mounting(:trait_a2_trait).set_target(other_model)
+        end
+      end
     end
   end
 end

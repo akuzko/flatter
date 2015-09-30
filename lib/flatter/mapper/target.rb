@@ -1,10 +1,6 @@
 module Flatter
   module Mapper::Target
-    class NoTargetError < ArgumentError
-      def initialize(mapper_class)
-        super("Target object is required to initialize #{mapper_class.name}")
-      end
-    end
+    NoTargetError = Class.new(ArgumentError)
 
     module FactoryMethods
       def fetch_target_from(mapper)
@@ -12,14 +8,23 @@ module Flatter
 
         target = options[:target]
 
-        target.is_a?(Proc) ? target.(mapper.target) : target
+        case target
+        when Proc then target.(mapper.target)
+        when String, Symbol
+          (mapper.private_methods + mapper.protected_methods + mapper.public_methods).include?(target.to_sym) ?
+            mapper.send(target) :
+            fail(ArgumentError, "Cannot use target #{target.inspect} with `#{mapper.name}`. Make sure #{target.inspect} is defined for #{mapper}")
+        else target
+        end
       end
     end
 
     attr_reader :target
 
-    def initialize(target, *, **)
-      raise NoTargetError.new(self.class) unless target.present?
+    def initialize(target, *)
+      unless target.present?
+        fail NoTargetError, "Target object is required to initialize #{self.class.name}"
+      end
 
       super
 
@@ -28,10 +33,6 @@ module Flatter
 
     def set_target(target)
       @target = target
-    end
-
-    def model_name
-      target.class.model_name if target.class.respond_to?(:model_name)
     end
   end
 end

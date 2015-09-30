@@ -57,6 +57,20 @@ module Flatter
       singleton_class.trait :extension, &extension
     end
 
+    def set_target(target)
+      if trait?
+        mounter.set_target(target)
+      else
+        super
+        trait_mountings.each{ |trait| trait.set_target!(target) }
+      end
+    end
+
+    def set_target!(target)
+      @target = target
+    end
+    protected :set_target!
+
     def full_name
       if name == 'extension_trait'
         super
@@ -66,7 +80,7 @@ module Flatter
     end
 
     def local_mountings
-      class_mountings_for(singleton_class) + super
+      @local_mountings ||= class_mountings_for(singleton_class) + super
     end
     private :local_mountings
 

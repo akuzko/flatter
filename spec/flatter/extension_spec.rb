@@ -2,10 +2,30 @@ require 'spec_helper'
 
 module Flatter
   module ExtensionSpec
+    def self.was_hooked!
+      @was_hooked = true
+    end
+
+    def self.was_hooked?
+      !!@was_hooked
+    end
+
+    module ExtensionDependency
+      extend ::Flatter::Extension
+
+      register_as :dependency
+    end
+
     module Extension
       extend ::Flatter::Extension
 
       register_as :spec_ext
+
+      depends_on :dependency
+
+      hooked do
+        ExtensionSpec.was_hooked!
+      end
 
       mapping.add_option :foo do
         def read
@@ -25,6 +45,14 @@ module Flatter
         def do_something_with(*)
         end
       end
+    end
+
+    module AnotherFoo
+      extend ::Flatter::Extension
+
+      register_as :another_foo
+
+      mapping.add_option :foo
     end
 
     ::Flatter.configure do |f|
@@ -47,6 +75,10 @@ module Flatter
     let(:model)  { ExtensionSpec::A.new(a1: 'a1', a2: 'a2') }
     let(:mapper) { ExtensionSpec::MapperA.new(model, bar: :bar) }
 
+    it 'used a #hooked callback' do
+      expect(ExtensionSpec.was_hooked?).to be true
+    end
+
     it 'adds mapping option to mapping options list' do
       expect(ExtensionSpec::MapperA.mapping_options).to include :foo
     end
@@ -64,6 +96,10 @@ module Flatter
         expect(mapper).to receive(:do_something_with).with(params)
         mapper.write(params)
       end
+    end
+
+    specify 'trying to use extension when option already defined' do
+      expect{ ::Flatter.use :another_foo }.to raise_error(RuntimeError)
     end
   end
 end

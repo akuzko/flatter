@@ -9,8 +9,12 @@ module Flatter
     end
 
     class MapperA < Mapper
-      def upcase(val)
-        val.upcase
+      def upcase
+        target.a1.upcase
+      end
+
+      def upcase2(name)
+        name + upcase
       end
 
       def assign(value)
@@ -53,7 +57,7 @@ module Flatter
         subject { mapping.read }
 
         context 'as Proc' do
-          let(:reader) { ->(value){ upcase(value * 2) } }
+          let(:reader) { ->{ (target.a1 * 2).upcase } }
 
           it { is_expected.to eq 'A1A1' }
         end
@@ -65,9 +69,9 @@ module Flatter
         end
 
         context 'as Symbol' do
-          let(:reader) { :upcase }
+          let(:reader) { :upcase2 }
 
-          it { is_expected.to eq 'A1' }
+          it { is_expected.to eq 'attr1A1' }
         end
 
         context 'as false' do

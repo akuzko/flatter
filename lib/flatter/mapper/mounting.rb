@@ -6,7 +6,7 @@ module Flatter
       def create(mapper)
         super.tap do |mounting|
           mounting.mounter = mapper
-          mounting.set_name(name)
+          mounting.name = name
         end
       end
     end
@@ -26,10 +26,6 @@ module Flatter
     end
 
     attr_accessor :mounter, :name
-
-    def set_name(name)
-      @name = name.to_s
-    end
 
     def full_name
       [mounter.try(:name), name].compact.join('_')
@@ -74,6 +70,10 @@ module Flatter
       @mountings ||= inner_mountings.each_with_object({}) do |mapper, res|
         res[mapper.full_name] = mapper
       end
+    end
+
+    def mounting(name)
+      mountings[name.to_s]
     end
 
     def inner_mountings
