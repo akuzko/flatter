@@ -4,6 +4,7 @@ module Flatter
     prepend Flatter::Mapper::Mounting::FactoryMethods
     prepend Flatter::Mapper::Traits::FactoryMethods
     prepend Flatter::Mapper::Options::FactoryMethods
+    prepend Flatter::Mapper::Collection::FactoryMethods
 
     attr_reader :name, :options
 
@@ -16,12 +17,25 @@ module Flatter
     end
 
     def mapper_class_name
-      options[:mapper_class_name] || "#{name.to_s.camelize}Mapper"
+      options[:mapper_class_name] || modulize(default_mapper_class_name)
+    end
+
+    def default_mapper_class_name
+      "#{name.camelize}Mapper"
     end
 
     def create(mapper)
       mapper_class.new(fetch_target_from(mapper))
     end
+
+    def modulize(class_name)
+      if i = options[:mounter_name].rindex('::')
+        "#{options[:mounter_name][0...i]}::#{class_name}"
+      else
+        class_name
+      end
+    end
+    private :modulize
 
     def fetch_target_from(mapper)
       default_target_from(mapper)

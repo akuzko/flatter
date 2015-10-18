@@ -37,10 +37,7 @@ module Flatter
     end
 
     def write(params)
-      params = params.with_indifferent_access
       local_mappings.each{ |mapping| mapping.write_from_params(params) }
-
-      params
     end
 
     def local_mappings

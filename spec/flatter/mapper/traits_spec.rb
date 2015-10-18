@@ -18,13 +18,13 @@ module Flatter
       attr_accessor :b1, :b2, :b3
     end
 
-    class MapperA < Mapper
+    class AMapper < Mapper
       map :a1
 
       trait :trait_a1 do
         map :a2
 
-        mount :b, mapper_class_name: 'Flatter::TraitsSpec::MapperB', traits: :trait_b do
+        mount :b, traits: :trait_b do
           map :b3
         end
       end
@@ -52,7 +52,7 @@ module Flatter
       end
     end
 
-    class MapperB < Mapper
+    class BMapper < Mapper
       map :b1
 
       trait :trait_b do
@@ -61,9 +61,9 @@ module Flatter
     end
   end
 
-  describe 'Mapper::Traits' do
+  describe Mapper::Traits do
     let(:model)  { TraitsSpec::A.new(a1: 'a1', a2: 'a2', a3: 'a3') }
-    let(:mapper) { TraitsSpec::MapperA.new(model, :trait_a1) }
+    let(:mapper) { TraitsSpec::AMapper.new(model, :trait_a1) }
 
     specify 'reading information mounted via traits' do
       expect(mapper.read).to eq({a1: 'a1', a2: 'a2', b1: 'b1', b2: 'b2', b3: 'b3'}.stringify_keys)
@@ -84,7 +84,7 @@ module Flatter
     end
 
     describe 'methods sharing' do
-      subject(:mapper){ TraitsSpec::MapperA.new(model, :trait_a2, :trait_a3, :trait_a4) }
+      subject(:mapper){ TraitsSpec::AMapper.new(model, :trait_a2, :trait_a3, :trait_a4) }
 
       it { is_expected.to respond_to :method_a2 }
       it { is_expected.to respond_to :method_a2 }
@@ -98,7 +98,7 @@ module Flatter
 
     describe '#set_target' do
       let(:other_model) { TraitsSpec::A.new }
-      let(:mapper)      { TraitsSpec::MapperA.new(model, :trait_a2, :trait_a3) }
+      let(:mapper)      { TraitsSpec::AMapper.new(model, :trait_a2, :trait_a3) }
 
       after do
         expect(mapper.target).to be other_model

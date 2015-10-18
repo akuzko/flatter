@@ -1,6 +1,12 @@
 module Flatter
   module Mapper::Target
+    extend ActiveSupport::Concern
+
     NoTargetError = Class.new(ArgumentError)
+
+    included do
+      mapper_options << :target_class_name
+    end
 
     module FactoryMethods
       def fetch_target_from(mapper)
@@ -22,7 +28,7 @@ module Flatter
     attr_reader :target
 
     def initialize(target, *)
-      unless target.present?
+      if target.nil?
         fail NoTargetError, "Target object is required to initialize #{self.class.name}"
       end
 
@@ -32,7 +38,20 @@ module Flatter
     end
 
     def set_target(target)
+      fail NoTargetError, "Cannot set nil target for #{self.class.name}" if target.nil?
       @target = target
+    end
+
+    def target_class
+      target_class_name.constantize
+    end
+
+    def target_class_name
+      options[:target_class_name] || default_target_class_name
+    end
+
+    def default_target_class_name
+      self.class.name.sub 'Mapper', ''
     end
   end
 end

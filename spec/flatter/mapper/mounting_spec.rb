@@ -2,13 +2,13 @@ require 'spec_helper'
 
 module Flatter
   module MountingSpec
-    class A
+    class ::A
       def b
         @b ||= B.new
       end
     end
 
-    class B
+    class ::B
       def c
         @c ||= C.new
       end
@@ -17,21 +17,21 @@ module Flatter
     class C
     end
 
-    class MapperA < Mapper
-      mount :b, mapper_class_name: 'Flatter::MountingSpec::MapperB'
+    class ::AMapper < Mapper
+      mount :b
     end
 
-    class MapperB < Mapper
-      mount :c, mapper_class_name: 'Flatter::MountingSpec::MapperC'
+    class ::BMapper < Mapper
+      mount :c, mapper_class_name: 'Flatter::MountingSpec::CMapper'
     end
 
-    class MapperC < Mapper
+    class CMapper < Mapper
     end
   end
 
   describe 'Mapper::Mounting' do
-    let(:model)  { MountingSpec::A.new }
-    let(:mapper) { MountingSpec::MapperA.new(model) }
+    let(:model)  { ::A.new }
+    let(:mapper) { ::AMapper.new(model) }
 
     specify '#mountings' do
       expect(mapper.mountings.keys).to eq %w(b c)

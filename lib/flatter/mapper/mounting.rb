@@ -11,9 +11,14 @@ module Flatter
       end
     end
 
+    included do
+      class_attribute :label
+    end
+
     module ClassMethods
-      def mount(name, *args)
-        mountings[name.to_s] = Flatter::Mapper::Factory.new(name, *args)
+      def mount(name, **opts)
+        factory_options = opts.reverse_merge(mounter_name: self.name || label)
+        mountings[name.to_s] = Flatter::Mapper::Factory.new(name, **factory_options)
       end
 
       def mountings
@@ -35,20 +40,19 @@ module Flatter
       super.tap do |mappings|
         inner_mountings.each do |mounting|
           mounting.local_mappings.each do |mapping|
-            mappings[mapping.name] = mapping
+            mappings.merge!(mapping.name => mapping, &merging_proc)
           end
         end
       end
     end
 
     def read
-      inner_mountings.map(&:read).inject(super, :merge)
+      local_mountings.map(&:read).inject(super, :merge)
     end
 
     def write(params)
-      super.tap do
-        inner_mountings.each{ |mapper| mapper.write(params) }
-      end
+      super
+      local_mountings.each{ |mapper| mapper.write(params) }
     end
 
     def local_mountings
@@ -67,9 +71,13 @@ module Flatter
     private :class_mountings
 
     def mountings
-      @mountings ||= inner_mountings.each_with_object({}) do |mapper, res|
-        res[mapper.full_name] = mapper
+      @mountings ||= inner_mountings.inject({}) do |res, mapper|
+        res.merge(mapper.full_name => mapper, &merging_proc)
       end
+    end
+
+    def mounting_names
+      mountings.keys
     end
 
     def mounting(name)
@@ -77,8 +85,18 @@ module Flatter
     end
 
     def inner_mountings
-      @_inner_mountings ||= local_mountings.map{ |mount| [mount, mount.inner_mountings] }.flatten
+      @_inner_mountings ||= local_mountings.map{ |mount| mount.as_inner_mountings }.flatten
     end
     protected :inner_mountings
+
+    def as_inner_mountings
+      [self, inner_mountings]
+    end
+    protected :as_inner_mountings
+
+    def merging_proc
+      proc { |_, old, new| Array(old).push(new) }
+    end
+    private :merging_proc
   end
 end

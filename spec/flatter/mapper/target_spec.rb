@@ -28,13 +28,13 @@ module Flatter
       attr_accessor :c1
     end
 
-    class MapperA < Mapper
+    class AMapper < Mapper
       map :a1
 
-      mount :b, target: ->(a){ a.my_model }, mapper_class_name: 'Flatter::TargetSpec::MapperB'
+      mount :b, target: ->(a){ a.my_model }
 
       trait :valid_c do
-        mount :c, target: :model_c, mapper_class_name: 'Flatter::TargetSpec::MapperC'
+        mount :c, target: :model_c
 
         def model_c
           target.model_c
@@ -43,26 +43,26 @@ module Flatter
       end
 
       trait :invalid_c do
-        mount :c, target: :c_model, mapper_class_name: 'Flatter::TargetSpec::MapperC'
+        mount :c, target: :c_model
       end
 
       trait :arbitrary_c do
-        mount :c, target: Struct.new(:c1).new, mapper_class_name: 'Flatter::TargetSpec::MapperC'
+        mount :c, target: 5
       end
     end
 
-    class MapperB < Mapper
+    class BMapper < Mapper
       map :b1
     end
 
-    class MapperC < Mapper
+    class CMapper < Mapper
       map :c1
     end
   end
 
-  describe 'Mapper::Target' do
+  describe Mapper::Target do
     let(:model)  { TargetSpec::A.new(a1: 'a1') }
-    let(:mapper) { TargetSpec::MapperA.new(model, :valid_c) }
+    let(:mapper) { TargetSpec::AMapper.new(model, :valid_c) }
 
     it 'builds target according to option' do
       expect(mapper.mountings['b'].target).to be model.my_model
@@ -71,15 +71,15 @@ module Flatter
     end
 
     context 'when target is an arbitrary object' do
-      let(:mapper) { TargetSpec::MapperA.new(model, :arbitrary_c) }
+      let(:mapper) { TargetSpec::AMapper.new(model, :arbitrary_c) }
 
       it 'uses that object' do
-        expect(mapper.mounting(:c).target).to be_kind_of(Struct)
+        expect(mapper.mounting(:c).target).to be 5
       end
     end
 
     context 'when unable to use target' do
-      let(:mapper) { TargetSpec::MapperA.new(model, :invalid_c) }
+      let(:mapper) { TargetSpec::AMapper.new(model, :invalid_c) }
 
       it 'fails with ArgumentError' do
         expect{ mapper.read }.to raise_error(ArgumentError)
@@ -88,7 +88,7 @@ module Flatter
 
     context 'when initializing without a target' do
       it 'raises exception' do
-        expect{ TargetSpec::MapperA.new(nil) }.
+        expect{ TargetSpec::AMapper.new(nil) }.
           to raise_error(Mapper::Target::NoTargetError)
       end
     end

@@ -61,11 +61,20 @@ module Flatter
     private :self_mountings
 
     def consolidate_errors!
-      root_mountings.map(&:errors).each do |errs|
-        errors.messages.merge!(errs.to_hash){ |key, old, new| old + new }
+      root_mountings.each do |mounting|
+        prefix = mounting.prefix
+        mounting.errors.to_hash.each do |name, errs|
+          error_key = [prefix, name].compact.join('.')
+          errors.messages.merge!(error_key.to_sym => errs){ |key, old, new| old + new }
+        end
       end
     end
     private :consolidate_errors!
+
+    def prefix
+      nil
+    end
+    protected :prefix
 
     def errors
       trait? ? mounter.errors : super

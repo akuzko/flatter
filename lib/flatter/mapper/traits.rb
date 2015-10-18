@@ -31,9 +31,11 @@ module Flatter
         super.tap{ |f| f.extension = block }
       end
 
-      def trait(name, &block)
+      def trait(name, label = nil, &block)
         trait_name   = "#{name}_trait"
-        mapper_class = Class.new(Flatter::Mapper, &block)
+        mapper_class = Class.new(Flatter::Mapper)
+        mapper_class.label = self.name || label
+        mapper_class.class_eval(&block)
 
         if self.name.present?
           mapper_class_name = trait_name.camelize
@@ -54,7 +56,7 @@ module Flatter
     end
 
     def extend_with(extension)
-      singleton_class.trait :extension, &extension
+      singleton_class.trait :extension, self.class.name, &extension
     end
 
     def set_target(target)

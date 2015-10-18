@@ -11,6 +11,8 @@ module Flatter
     autoload :AttributeMethods
     autoload :Persistence
     autoload :ModelName
+    autoload :Collection
+    autoload :WriteWithIndifferentAccess
 
     include Options
     include Target
@@ -21,6 +23,8 @@ module Flatter
     include ActiveModel::Validations
     include Persistence
     prepend ModelName
+    prepend Collection
+    prepend WriteWithIndifferentAccess
 
     def self.inherited(subclass)
       subclass.mappings  = mappings.dup

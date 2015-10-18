@@ -72,19 +72,19 @@ module Flatter
       end
     end
 
-    class MapperA < Mapper
+    class AMapper < Mapper
       map :a1
 
       validates_presence_of :a1
 
-      mount :c, mapper_class_name: 'Flatter::PersistenceSpec::MapperC', traits: :trait_c
+      mount :c, traits: :trait_c
 
       trait :trait_a do
         map :a2
 
         validates_presence_of :a2
 
-        mount :b, mapper_class_name: 'Flatter::PersistenceSpec::MapperB', traits: [:trait_b1, :trait_b2] do
+        mount :b, traits: [:trait_b1, :trait_b2] do
           map :b2
 
           set_callbacks_for 'B(e)', :validate, :save
@@ -93,12 +93,12 @@ module Flatter
         set_callbacks_for 'trait_a', :validate, :save
       end
 
-      mount :d, mapper_class_name: 'Flatter::PersistenceSpec::MapperD'
+      mount :d
 
       set_callbacks_for 'A', :validate, :save
     end
 
-    class MapperB < Mapper
+    class BMapper < Mapper
       map :b1
 
       validates_presence_of :b1
@@ -122,7 +122,7 @@ module Flatter
       set_callbacks_for 'B', :validate, :save
     end
 
-    class MapperC < Mapper
+    class CMapper < Mapper
       map :c1
 
       trait :trait_c do
@@ -140,16 +140,16 @@ module Flatter
       set_callbacks_for 'C', :validate, :save
     end
 
-    class MapperD < Mapper
+    class DMapper < Mapper
       map :d1
 
       set_callbacks_for 'D', :validate, :save
     end
   end
 
-  describe 'Mapper::Persistence' do
+  describe Mapper::Persistence do
     let(:model)  { PersistenceSpec::A.new }
-    let(:mapper) { PersistenceSpec::MapperA.new(model, :trait_a) }
+    let(:mapper) { PersistenceSpec::AMapper.new(model, :trait_a) }
 
     before { PersistenceSpec.execution = [] }
 

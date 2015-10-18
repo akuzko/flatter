@@ -14,7 +14,7 @@ module Flatter
     end
   end
 
-  describe 'Mapper::Mapping' do
+  describe Mapper::Mapping do
     let(:model)  { MappingSpec::A.new(a1: 'a1', a2: 'a2', a3: 'a3', a4: 'a4') }
     let(:mapper) { MappingSpec::MapperA.new(model) }
 
