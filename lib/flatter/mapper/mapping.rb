@@ -43,6 +43,7 @@ module Flatter
     def local_mappings
       @_local_mappings ||= self.class.mappings.values.map{ |factory| factory.create(self) }
     end
+    protected :local_mappings
 
     def mappings
       local_mappings.each_with_object({}) do |mapping, res|
@@ -51,7 +52,7 @@ module Flatter
     end
 
     def mapping_names
-      @_mapping_names ||= mappings.keys
+      local_mappings.map(&:name)
     end
 
     def writable_mapping_names

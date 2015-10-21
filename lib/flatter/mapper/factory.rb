@@ -6,6 +6,8 @@ module Flatter
     prepend Flatter::Mapper::Options::FactoryMethods
     prepend Flatter::Mapper::Collection::FactoryMethods
 
+    NoTargetError = Class.new(RuntimeError)
+
     attr_reader :name, :options
 
     def initialize(name, **options)
@@ -24,8 +26,8 @@ module Flatter
       "#{name.camelize}Mapper"
     end
 
-    def create(mapper)
-      mapper_class.new(fetch_target_from(mapper))
+    def create(*)
+      mapper_class.new.tap{ |mapper| mapper.factory = self }
     end
 
     def modulize(class_name)
@@ -42,7 +44,11 @@ module Flatter
     end
 
     def default_target_from(mapper)
-      mapper.target.public_send(name) if mapper.target.respond_to?(name)
+      if mapper.target.respond_to?(name)
+        mapper.target.public_send(name)
+      else
+        fail NoTargetError, "Unable to implicitly fetch target for '#{name}' from #{mapper}"
+      end
     end
     private :default_target_from
   end

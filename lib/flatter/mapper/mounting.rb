@@ -46,6 +46,10 @@ module Flatter
       end
     end
 
+    def mapping_names
+      super + local_mountings.map(&:mapping_names).flatten
+    end
+
     def read
       local_mountings.map(&:read).inject(super, :merge)
     end
@@ -53,12 +57,13 @@ module Flatter
     def write(params)
       super
       local_mountings.each{ |mapper| mapper.write(params) }
+      @_inner_mountings = nil
     end
 
     def local_mountings
       class_mountings_for(self.class)
     end
-    private :local_mountings
+    protected :local_mountings
 
     def class_mountings_for(klass)
       class_mountings(klass).map{ |factory| factory.create(self) }
@@ -77,12 +82,13 @@ module Flatter
     end
 
     def mounting_names
-      mountings.keys
+      local_mounting_names + local_mountings.map(&:mounting_names).flatten
     end
 
-    def mounting(name)
-      mountings[name.to_s]
+    def local_mounting_names
+      local_mountings.map(&:name)
     end
+    private :local_mounting_names
 
     def inner_mountings
       @_inner_mountings ||= local_mountings.map{ |mount| mount.as_inner_mountings }.flatten

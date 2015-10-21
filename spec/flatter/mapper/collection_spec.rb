@@ -48,7 +48,7 @@ module Flatter
       attr_accessor :e
     end
 
-    class AMapper < Flatter::Mapper
+    class AMapper < Mapper
       map :a
 
       mount :bs do
@@ -60,22 +60,22 @@ module Flatter
       end
     end
 
-    class BMapper < Flatter::Mapper
+    class BMapper < Mapper
       key :id
-      map :b
+      map attr_b: :b
     end
 
-    class CMapper < Flatter::Mapper
+    class CMapper < Mapper
       map :c
     end
 
-    class DMapper < Flatter::Mapper
+    class DMapper < Mapper
       map :d
 
       mount :e
     end
 
-    class EMapper < Flatter::Mapper
+    class EMapper < Mapper
       map :e
 
       validate :odd_validation
@@ -95,9 +95,9 @@ module Flatter
 
       its(["a"])  { is_expected.to eq "a" }
       its(["bs"]) { is_expected.to eq [
-        {"key" => 1, "b" => 1, "c" => "1c"},
-        {"key" => 2, "b" => 2, "c" => "2c"},
-        {"key" => 3, "b" => 3, "c" => "3c"}] }
+        {"key" => 1, "attr_b" => 1, "c" => "1c"},
+        {"key" => 2, "attr_b" => 2, "c" => "2c"},
+        {"key" => 3, "attr_b" => 3, "c" => "3c"}] }
       its(["ds"]) { is_expected.to eq [
         {"key" => 1, "d" => 1, "e" => "1e"},
         {"key" => 2, "d" => 2, "e" => "2e"},
@@ -108,7 +108,7 @@ module Flatter
       context "when key is present in collection" do
         let(:params) {{
           bs: [
-            {key: 1, b: 11},
+            {key: 1, attr_b: 11},
             {key: 2, c: '22c'},
             {key: 3}
           ]
@@ -118,7 +118,7 @@ module Flatter
           mapper.write(params)
 
           expect(a.bs[0].b).to eq 11
-          expect(a.bs[0].c.c).to eq "1c"
+          expect(a.bs[0].c.c).to eq "11c"
           expect(a.bs[1].b).to eq 2
           expect(a.bs[1].c.c).to eq "22c"
           expect(a.bs[2].b).to eq 3
@@ -134,12 +134,12 @@ module Flatter
             to receive(:remove_items).with([2, 3]).and_call_original
 
           expect{ mapper.write(params) }.to change{ a.bs.length }.from(3).to(1)
-          expect(mapper.read["bs"]).to eq ["key" => 1, "b" => 1, "c" => "1c"]
+          expect(mapper.read["bs"]).to eq ["key" => 1, "attr_b" => 1, "c" => "1c"]
         end
       end
 
       context "when new items appear" do
-        let(:params){ {bs: [{b: 4, c: 4}, {b: 5}, {c: 6}]} }
+        let(:params){ {bs: [{attr_b: 4, c: 4}, {attr_b: 5}, {c: 6}]} }
 
         it "adds new objects and mappers to collections" do
           expect_any_instance_of(CollectionSpec::BMapper).

@@ -25,21 +25,48 @@ module Flatter
       end
     end
 
-    attr_reader :target
+    attr_accessor :factory
 
-    def initialize(target, *)
-      if target.nil?
-        fail NoTargetError, "Target object is required to initialize #{self.class.name}"
-      end
-
+    def initialize(target = nil, *)
       super
+      set_target!(target) if target.present?
+    end
 
+    def target
+      ensure_target!
+      @target
+    end
+
+    def ensure_target!
+      initialize_target unless target_initialized?
+    end
+    protected :ensure_target!
+
+    def initialize_target
+      return set_target!(mounter.target) if trait?
+
+      _mounter = mounter.trait? ? mounter.mounter : mounter
+      set_target!(factory.fetch_target_from(_mounter))
+    end
+    private :initialize_target
+
+    def set_target(target)
+      if trait?
+        mounter.set_target!(target)
+      else
+        set_target!(target)
+        trait_mountings.each{ |trait| trait.set_target!(target) }
+      end
+    end
+
+    def set_target!(target)
+      fail NoTargetError, "Cannot set nil target for #{self.class.name}" if target.nil?
+      @_target_initialized = true
       @target = target
     end
 
-    def set_target(target)
-      fail NoTargetError, "Cannot set nil target for #{self.class.name}" if target.nil?
-      @target = target
+    def target_initialized?
+      !!@_target_initialized
     end
 
     def target_class

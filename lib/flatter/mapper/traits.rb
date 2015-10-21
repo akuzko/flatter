@@ -20,10 +20,6 @@ module Flatter
           mounting.extend_with(extension) if extension.present?
         end
       end
-
-      def fetch_target_from(mapper)
-        trait? ? mapper.target : super
-      end
     end
 
     module ClassMethods
@@ -48,7 +44,7 @@ module Flatter
       end
     end
 
-    def initialize(target, *traits, **, &block)
+    def initialize(_, *traits, **, &block)
       super
 
       set_traits(traits)
@@ -59,20 +55,6 @@ module Flatter
       singleton_class.trait :extension, self.class.name, &extension
     end
 
-    def set_target(target)
-      if trait?
-        mounter.set_target(target)
-      else
-        super
-        trait_mountings.each{ |trait| trait.set_target!(target) }
-      end
-    end
-
-    def set_target!(target)
-      @target = target
-    end
-    protected :set_target!
-
     def full_name
       if name == 'extension_trait'
         super
@@ -82,7 +64,7 @@ module Flatter
     end
 
     def local_mountings
-      @local_mountings ||= class_mountings_for(singleton_class) + super
+      @_local_mountings ||= class_mountings_for(singleton_class) + super
     end
     private :local_mountings
 
@@ -127,6 +109,11 @@ module Flatter
     def trait!
       @trait = true
     end
+
+    def local_mounting_names
+      super.reject{ |name| trait_mountings.any?{ |mount| mount.name == name } }
+    end
+    private :local_mounting_names
 
     def trait_mountings
       @_trait_mountings ||= local_mountings.select(&:trait?)

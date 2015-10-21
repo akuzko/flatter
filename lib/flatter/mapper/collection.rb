@@ -69,10 +69,11 @@ module Flatter
       def add_item(params)
         collection << clone.tap do |mapper|
           item = target_class.new
-          add_target_item(item)
-          mapper.set_target(item)
+          mapper.reset_locals!
+          mapper.set_target!(item)
           mapper.item_index = collection.length
           mapper.write(params)
+          add_target_item(item)
         end
       end
 
@@ -110,6 +111,27 @@ module Flatter
       end
     end
 
+    def pluralize!
+      @_pluralized = true
+    end
+
+    def pluralized?
+      !!@_pluralized
+    end
+
+    def mapping_names
+      super.map{ |name| collection? || pluralized? ? name.pluralize : name }
+    end
+
+    def mounting_names
+      super.map{ |name| pluralized? ? name.pluralize : name }
+    end
+
+    def local_mountings
+      super.each{ |mapper| mapper.pluralize! if collection? || pluralized? }
+    end
+    protected :local_mountings
+
     def assert_key_uniqueness!(values)
       keys = values.map{ |v| v['key'] }.compact
       keys == keys.uniq or
@@ -129,7 +151,8 @@ module Flatter
 
       @collection ||= target.each.with_index.map do |item, index|
         clone.tap do |mapper|
-          mapper.set_target item
+          mapper.reset_locals!
+          mapper.set_target! item
           mapper.item_index = index
         end
       end
@@ -148,9 +171,20 @@ module Flatter
     protected :item_name
 
     def as_inner_mountings
-      collection? ? collection.map{ |item| item.as_inner_mountings } : super
+      if collection?
+        ensure_target!
+        collection.map{ |item| item.as_inner_mountings }
+      else
+        super
+      end
     end
     protected :as_inner_mountings
+
+    def reset_locals!
+      @_local_mappings = nil
+      @_local_mountings = nil
+    end
+    protected :reset_locals!
 
     def collection?
       options[:collection] && item_index.nil?

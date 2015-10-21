@@ -4,10 +4,10 @@ module Flatter
 
     autoload :Factory
     autoload :Options
-    autoload :Target
     autoload :Mapping
     autoload :Mounting
     autoload :Traits
+    autoload :Target
     autoload :AttributeMethods
     autoload :Persistence
     autoload :ModelName
@@ -15,10 +15,10 @@ module Flatter
     autoload :WriteWithIndifferentAccess
 
     include Options
-    include Target
     include Mapping
     include Mounting
     include Traits
+    include Target
     include AttributeMethods
     include ActiveModel::Validations
     include Persistence
