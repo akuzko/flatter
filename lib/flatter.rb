@@ -13,7 +13,18 @@ module Flatter
 
   use :scribe, require: 'flatter/mapping/scribe'
 
+  mattr_accessor :default_mapper_class
+
   def self.configure
     yield self
+  end
+
+  def self.extends(klass, *modules)
+    if block_given?
+      _module = Module.new(&Proc.new)
+      klass.const_set("FlatterExtension", _module)
+      modules.push _module
+    end
+    modules.each{ |mod| klass.send(:include, mod) }
   end
 end

@@ -11,7 +11,7 @@ module Flatter
         return super unless reader?
 
         case reader
-        when Proc, String, Symbol
+        when Proc, Symbol
           args = Array((name if arity_of(reader) == 1))
           exec_or_send(reader, args)
         when false then nil
@@ -23,11 +23,11 @@ module Flatter
         return super unless writer?
 
         case writer
-        when Proc, String, Symbol
+        when Proc, Symbol
           args = [value].tap{ |a| a << name if arity_of(writer) == 2 }
           exec_or_send(writer, args)
         when false then nil
-        else fail BadWriterError, "cannot use #{writer} for assigning values"
+        else fail BadWriterError, "cannot use #{writer.inspect} for assigning values"
         end
       end
 

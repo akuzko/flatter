@@ -27,20 +27,18 @@ module Flatter
         super.tap{ |f| f.extension = block }
       end
 
-      def trait(name, label = nil, &block)
-        trait_name   = "#{name}_trait"
+      def trait(trait_name, label: name, extends: nil, &block)
+        trait_name   = "#{trait_name}_trait"
         mapper_class = Class.new(Flatter::Mapper)
-        mapper_class.label = self.name || label
-        mapper_class.class_eval(&block)
+        mapper_class.label = label
+        mapper_class.class_eval(&block) if block.present?
 
         if self.name.present?
           mapper_class_name = trait_name.camelize
           const_set(mapper_class_name, mapper_class)
-
-          mount trait_name, mapper_class_name: "#{self.name}::#{mapper_class_name}", trait: true
-        else
-          mount trait_name, mapper_class: mapper_class, trait: true
         end
+
+        mount trait_name, mapper_class: mapper_class, trait: true, extends: extends
       end
     end
 
@@ -52,7 +50,7 @@ module Flatter
     end
 
     def extend_with(extension)
-      singleton_class.trait :extension, self.class.name, &extension
+      singleton_class.trait :extension, label: self.class.name, &extension
     end
 
     def full_name
@@ -95,12 +93,40 @@ module Flatter
     end
 
     def trait_names
-      traits.map{ |trait| "#{trait.to_s}_trait" }
+      traits.map{ |trait| trait_name_for(trait) }
     end
 
     def set_traits(traits)
-      @traits = traits
+      @traits = resolve_trait_dependencies(traits)
     end
+
+    def trait_name_for(trait)
+      "#{trait.to_s}_trait"
+    end
+    private :trait_name_for
+
+    def resolve_trait_dependencies(traits)
+      factories = self.class.mountings.values.select(&:trait?)
+      catch(:done){ loop{ extend_traits_from!(traits, factories) } }
+      traits
+    end
+    private :resolve_trait_dependencies
+
+    def extend_traits_from!(traits, factories)
+      initial_length = traits.length
+      traits.map! do |trait|
+        factory = factories.find{ |f| f.name == trait_name_for(trait) }
+        if factory.present?
+          factories.delete(factory)
+          Array(factory.options[:extends]).push(trait)
+        else
+          trait
+        end
+      end
+      traits.flatten!
+      throw :done if traits.length == initial_length
+    end
+    private :extend_traits_from!
 
     def trait?
       !!@trait

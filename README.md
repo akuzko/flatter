@@ -79,15 +79,15 @@ end
 #### Mapping Options
 
 - `:reader` Allows to add a custom logic for reading target's attribute.
-  When value is `String` or `Symbol`, calls a method defined by a **mapper** class.
+  When value is `Symbol`, calls a method defined by a **mapper** class.
   If that method accepts an argument, mapping name will be passed to it.
   When value is `Proc`, it is executed in context of mapper object, yielding
-  mapping name if block has arity of 1. For other arbitrary objects will simply
-  return that object.
+  mapping name if block has arity of 1. For other arbitrary objects (including
+  `String`s) will simply return that object.
 
 - `:writer` Allows to control a way how value is assigned (written).
-  When value is `String` or `Symbol`, calls a method defined by a **mapper** class,
-  passing a value to it. If that method accepts second argument, mapping name will be
+  When value is `Symbol`, calls a method defined by a **mapper** class, passing
+  a value to it. If that method accepts second argument, mapping name will be
   additionally passed to it.
   When value is `Proc`, it is executed in context of mapper object, yielding
   value and optionally mapping name if block has arity of 2. For other values will
@@ -518,14 +518,14 @@ class DepartmentMapper < Flatter::Mapper
 end
 ```
 
-`mapper.first_name` no longer able to return specific value, since it's
+`department_mapper.first_name` no longer able to return specific value, since it's
 not clear which first name should it be. Thus, when mapper is mounted as
 a collection item, instead of singular value accessors you gain pluralized
 reader methods:
 
 ```ruby
   # all first_names of all people of the mapped department:
-  mapper.first_names # => ["John", "Derek"]
+  department_mapper.first_names # => ["John", "Derek"]
 ```
 
 The same concerns for all nested (singular or collection) mappings and mountings
@@ -533,15 +533,15 @@ under collection mapper:
 
 ```ruby
   # all phone number of all people of the mapped department
-  mapper.phone_numbers # => ["111-222-3333", "222-111-33333"]
+  department_mapper.phone_numbers # => ["111-222-3333", "222-111-33333"]
 
   # all the people
-  mapper.people # =>
+  department_mapper.people # =>
   # [{"first_name" => "John", "last_name" => "Smith", "key" => 1, "phone_number" => "111-222-3333"},
   #  {"first_name" => "Derek", "last_name" => "Parker", "key" => 2, "phone_number" => "222-111-3333"}]
 
   # all phones (note the :phone mapper mounted on :people, opposed to it's :phone_number mapping)
-  mapper.phones # =>
+  department_mapper.phones # =>
   # [{"phone_number" => "111-222-3333"}, {"phone_number" => "222-111-33333"}]
 ```
 

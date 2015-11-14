@@ -58,6 +58,10 @@ module Flatter
       trait :trait_b do
         map :b2
       end
+
+      trait :trait_b2, extends: :trait_b
+
+      trait :trait_b3, extends: :trait_b2
     end
   end
 
@@ -116,6 +120,15 @@ module Flatter
         it 'propagates target change to root and other traits' do
           mapper.mounting(:trait_a2_trait).set_target(other_model)
         end
+      end
+    end
+
+    describe "traits dependency (:extends option)" do
+      let(:model)  { TraitsSpec::B.new(b1: 'b1') }
+      let(:mapper) { TraitsSpec::BMapper.new(model, :trait_b3) }
+
+      it "includes all depent traits" do
+        expect(mapper.traits).to eq %i[trait_b trait_b2 trait_b3]
       end
     end
   end

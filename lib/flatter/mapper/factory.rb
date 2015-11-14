@@ -15,8 +15,15 @@ module Flatter
     end
 
     def mapper_class
-      options[:mapper_class] || mapper_class_name.constantize
+      options[:mapper_class] || default_mapper_class
     end
+
+    def default_mapper_class
+      mapper_class_name.constantize
+    rescue NameError => e
+      Flatter.default_mapper_class or raise e
+    end
+    private :default_mapper_class
 
     def mapper_class_name
       options[:mapper_class_name] || modulize(default_mapper_class_name)
