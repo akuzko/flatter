@@ -49,6 +49,11 @@ module Flatter
         def method_a3
           a3
         end
+
+        def method_a3p
+          "protected #{a3}"
+        end
+        protected :method_a3p
       end
     end
 
@@ -59,9 +64,9 @@ module Flatter
         map :b2
       end
 
-      trait :trait_b2, extends: :trait_b
+      trait :trait_b2, includes: :trait_b
 
-      trait :trait_b3, extends: :trait_b2
+      trait :trait_b3, includes: :trait_b2
     end
   end
 
@@ -95,6 +100,7 @@ module Flatter
 
       specify{ expect(mapper.method_a2).to eq 'a2' }
       specify{ expect(mapper.method_a3).to eq 'a3' }
+      specify{ expect(mapper.method_a3p).to eq 'protected a3' }
 
       specify{ expect(mapper.mountings['trait_a3_trait'].method_a1).to eq 'a1' }
       specify{ expect(mapper.mountings['trait_a3_trait'].method_a3).to eq 'a3' }
@@ -123,7 +129,7 @@ module Flatter
       end
     end
 
-    describe "traits dependency (:extends option)" do
+    describe "traits dependency (:includes option)" do
       let(:model)  { TraitsSpec::B.new(b1: 'b1') }
       let(:mapper) { TraitsSpec::BMapper.new(model, :trait_b3) }
 

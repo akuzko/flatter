@@ -27,7 +27,7 @@ module Flatter
         super.tap{ |f| f.extension = block }
       end
 
-      def trait(trait_name, label: name, extends: nil, &block)
+      def trait(trait_name, label: name, includes: nil, &block)
         trait_name   = "#{trait_name}_trait"
         mapper_class = Class.new(Flatter::Mapper)
         mapper_class.label = label
@@ -38,7 +38,7 @@ module Flatter
           const_set(mapper_class_name, mapper_class)
         end
 
-        mount trait_name, mapper_class: mapper_class, trait: true, extends: extends
+        mount trait_name, mapper_class: mapper_class, trait: true, includes: includes
       end
     end
 
@@ -107,18 +107,18 @@ module Flatter
 
     def resolve_trait_dependencies(traits)
       factories = self.class.mountings.values.select(&:trait?)
-      catch(:done){ loop{ extend_traits_from!(traits, factories) } }
+      catch(:done){ loop{ include_traits_from!(traits, factories) } }
       traits
     end
     private :resolve_trait_dependencies
 
-    def extend_traits_from!(traits, factories)
+    def include_traits_from!(traits, factories)
       initial_length = traits.length
       traits.map! do |trait|
         factory = factories.find{ |f| f.name == trait_name_for(trait) }
         if factory.present?
           factories.delete(factory)
-          Array(factory.options[:extends]).push(trait)
+          Array(factory.options[:includes]).push(trait)
         else
           trait
         end
@@ -126,7 +126,7 @@ module Flatter
       traits.flatten!
       throw :done if traits.length == initial_length
     end
-    private :extend_traits_from!
+    private :include_traits_from!
 
     def trait?
       !!@trait
@@ -147,7 +147,7 @@ module Flatter
     private :trait_mountings
 
     def shared_methods
-      self.class.public_instance_methods(false)
+      self.class.public_instance_methods(false) + self.class.protected_instance_methods(false)
     end
 
     def respond_to_missing?(name, *)
