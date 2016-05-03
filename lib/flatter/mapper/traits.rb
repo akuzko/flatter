@@ -158,6 +158,10 @@ module Flatter
       end
     end
 
+    def mounter!
+      trait? ? mounter.mounter : mounter
+    end
+
     def method_missing(name, *args, &block)
       if trait?
         mounter.send(name, *args, &block)

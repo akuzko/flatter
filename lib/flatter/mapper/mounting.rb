@@ -60,6 +60,10 @@ module Flatter
       @_inner_mountings = nil
     end
 
+    def root
+      mounter.nil? ? self : mounter.root
+    end
+
     def local_mountings
       class_mountings_for(self.class)
     end

@@ -68,18 +68,24 @@ module Flatter
 
       def add_item(params)
         collection << clone.tap do |mapper|
-          item = target_class.new
+          item = build_collection_item
           mapper.reset_locals!
           mapper.set_target!(item)
           mapper.item_index = collection.length
           mapper.write(params)
-          add_target_item(item)
+          add_item_to_target(item)
         end
       end
 
-      def add_target_item(item)
+      def build_collection_item
+        target_class.new
+      end
+      private :build_collection_item
+
+      def add_item_to_target(item)
         target << item
       end
+      private :add_item_to_target
     end
 
     def read
@@ -96,7 +102,8 @@ module Flatter
       return super unless collection?
       return unless params.key?(name)
 
-      data = params[name]
+      data = extract_data(params)
+
       assert_collection!(data)
 
       keys = collection.map(&:key)
@@ -110,6 +117,11 @@ module Flatter
         end
       end
     end
+
+    def extract_data(params)
+      params[name]
+    end
+    private :extract_data
 
     def pluralize!
       @_pluralized = true
