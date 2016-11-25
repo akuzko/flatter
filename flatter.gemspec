@@ -26,6 +26,8 @@ Gem::Specification.new do |spec|
   spec.add_dependency "activesupport", ">= 3.2"
   spec.add_dependency "activemodel", ">= 3.0"
 
+  spec.add_development_dependency "activerecord", ">= 3.2"
+  spec.add_development_dependency "sqlite3"
   spec.add_development_dependency "bundler", "~> 1.10"
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "rspec"
