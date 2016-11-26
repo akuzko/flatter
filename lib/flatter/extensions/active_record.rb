@@ -54,7 +54,7 @@ module Flatter::Extensions
 
       def set_target!(target)
         super
-        target.extend(skip_autosave_association_extension_for(target)) if ar?
+        add_skip_autosave_association_extension_to(target.class) if ar?
         target
       end
 
@@ -87,12 +87,18 @@ module Flatter::Extensions
         return super unless ar?
 
         assign_foreign_keys_from_mountings
-        result = target.without_association_autosave{ target.save }
+        result = target.without_association_callbacks{ target.save }
         assign_foreign_keys_for_mountings if result
 
         result != false
       end
       protected :save_target
+
+      def target_valid?
+        return super unless ar?
+        target.without_association_callbacks{ super }
+      end
+      private :target_valid?
 
       def assign_foreign_keys_from_mountings
         associated_mountings(:mounter_foreign_key).each do |mounting|
@@ -117,22 +123,30 @@ module Flatter::Extensions
       end
       private :associated_mountings
 
-      def skip_autosave_association_extension_for(record)
-        association_autosave_methods = record.methods.grep(/autosave_associated_records_for_/)
-        association_validation_methods = record.methods.grep(/validate_associated_records_for_/)
+      def add_skip_autosave_association_extension_to(klass)
+        return if klass.const_defined?('SkipAutosaveAssociationExtension')
+
+        klass.const_set('SkipAutosaveAssociationExtension', skip_autosave_association_extension_for(klass))
+        klass.send(:prepend, klass::SkipAutosaveAssociationExtension)
+      end
+      private :add_skip_autosave_association_extension_to
+
+      def skip_autosave_association_extension_for(klass)
+        association_autosave_methods = klass.instance_methods.grep(/autosave_associated_records_for_/)
+        association_validation_methods = klass.instance_methods.grep(/validate_associated_records_for_/)
 
         Module.new do
           (association_autosave_methods + association_validation_methods).each do |name|
             define_method(name) do
-              @skip_autosave_associations || super
+              @skip_association_callbacks || super()
             end
           end
 
-          def without_association_autosave
-            @skip_autosave_associations = true
+          def without_association_callbacks
+            @skip_association_callbacks = true
             yield
           ensure
-            remove_instance_variable('@skip_autosave_associations')
+            remove_instance_variable('@skip_association_callbacks')
           end
         end
       end

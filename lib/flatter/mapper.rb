@@ -9,6 +9,7 @@ module Flatter
     autoload :Traits
     autoload :Target
     autoload :AttributeMethods
+    autoload :Validation
     autoload :Persistence
     autoload :ModelName
     autoload :Collection
@@ -21,6 +22,7 @@ module Flatter
     include Target
     include AttributeMethods
     include ActiveModel::Validations
+    include Validation
     include Persistence
     prepend ModelName
     prepend Collection
