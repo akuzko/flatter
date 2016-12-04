@@ -61,13 +61,13 @@ module Flatter::Extensions
       def apply(*)
         return super unless ar?
 
-        !!::ActiveRecord::Base.transaction do
+        ::ActiveRecord::Base.transaction do
           super or raise ::ActiveRecord::Rollback
         end
       end
 
       def save
-        !!::ActiveRecord::Base.transaction do
+        ::ActiveRecord::Base.transaction do
           begin
             @ar_error = nil
             super

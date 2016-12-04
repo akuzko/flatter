@@ -93,7 +93,7 @@ module Flatter::Extensions
       it 'uses transaction on #apply method call' do
         expect(::ActiveRecord::Base).to receive(:transaction).at_least(:once).and_call_original
 
-        expect(mapper.apply(user_email: '', role_ids: '2,3')).to be false
+        expect(mapper.apply(user_email: '', role_ids: '2,3')).to be_falsy
         expect(user.reload.role_ids).to eq [1]
       end
 
@@ -101,7 +101,7 @@ module Flatter::Extensions
         expect(::ActiveRecord::Base).to receive(:transaction).at_least(:once).and_call_original
 
         mapper.write(user_email: '')
-        expect(mapper.save).to be false
+        expect(mapper.save).to be_falsy
         expect(user.reload.email).to eq 'spec@mail.com'
       end
     end
@@ -215,7 +215,7 @@ module Flatter::Extensions
 
         it 'does not create any record' do
           expect { expect { expect {
-            expect(apply).to be false
+            expect(apply).to be_falsy
             expect(mapper.errors.keys).to eq [:last_name]
           }.not_to change(ActiveRecordSpec::User, :count)
           }.not_to change(ActiveRecordSpec::Person, :count)
