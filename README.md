@@ -163,6 +163,13 @@ Mappers include `ActiveModel::Validation` module and thus support `ActiveSupport
 callbacks. Additionally, `:save` callbacks have been defined for `Flatter::Mapper`,
 so you can do something like `set_callback :save, :after, :send_invitation`.
 
+### Mapper and Target Validations
+
+If mapper's target responds to `valid?` method, it will be called upon mapper's
+validation. If target is invalid, mapper will receive `:target, :invalid` error.
+Additionally, all target's errors on attributes that have declared mapping will
+be consolidated with mapper's errors.
+
 ### Traits
 
 Traits are another powerful mapper ability. Traits allow to encapsulate named sets
@@ -602,9 +609,10 @@ mapper.errors.messages # =>
 
 ### Extensions
 
-Aside from core functionality and behavior defined in this gem, there is also
-[flatter-extensions](https://github.com/akuzko/flatter-extensions) gem that
-provides extensions to help you use mappers more efficiently. At this point there
+Aside from core functionality and behavior described above, there is also
+number of handy [extensions](https://github.com/akuzko/flatter/wiki/Extensions)
+(which originally were hosted in their own gem, but now are the part of the flatter)
+that have aim to help you use mappers more efficiently. At this point there
 are following extensions:
 
 - `:multiparam` Allows you to define multiparam mappings by adding `:multiparam`

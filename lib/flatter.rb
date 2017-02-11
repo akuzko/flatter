@@ -28,3 +28,5 @@ module Flatter
     modules.each{ |mod| klass.send(:include, mod) }
   end
 end
+
+require 'flatter/extensions'
