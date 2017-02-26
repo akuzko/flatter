@@ -1,6 +1,7 @@
 # Flatter
 
-[![Build Status](https://secure.travis-ci.org/akuzko/flatter.png)](http://travis-ci.org/akuzko/flatter)
+[![build status](https://secure.travis-ci.org/akuzko/flatter.png)](http://travis-ci.org/akuzko/flatter)
+[![github release](https://img.shields.io/github/release/akuzko/flatter.svg)](https://github.com/akuzko/flatter/releases)
 
 This gem supersedes [FlatMap](https://github.com/TMXCredit/flat_map) gem. With
 only it's core concepts in mind it has been written from complete scratch to

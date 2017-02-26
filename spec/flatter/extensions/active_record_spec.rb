@@ -293,5 +293,19 @@ module Flatter::Extensions
         end
       end
     end
+
+    describe 'collections assignment' do
+      let(:user) { ActiveRecordSpec::User.create(email: 'user@email.com') }
+      let(:mapper) do
+        ActiveRecordSpec::UserMapper.new(user) do
+          mount(:phones) { key :id }
+        end
+      end
+      let(:params) { {phones: [{phone_number: '111-222-3333'}, {phone_number: '111-333-2222'}]} }
+
+      it 'adds items to a collection only once' do
+        expect{ mapper.write(params) }.to change{ user.phones.size }.from(0).to(2)
+      end
+    end
   end
 end

@@ -83,7 +83,7 @@ module Flatter
       private :build_collection_item
 
       def add_item_to_target(item)
-        target << item
+        target << item unless target.include?(item)
       end
       private :add_item_to_target
     end
